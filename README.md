@@ -1,38 +1,63 @@
 # 🩸 Blood Integration Broker — Systems Integration Assessment
 
-## Overview
-In this assessment you will design and implement a true Systems Integration (SI) Broker using Java and Spring Boot. The system acts as a central integration layer that mediates communication between a legacy hospital system (sending XML via SFTP) and external blood banks (using SOAP and REST APIs).
+## 1. Overview
 
-Your task is to implement the transformation, routing, and outbound connection logic, demonstrating enterprise integration patterns (EIP):
+This project is a Systems Integration (SI) Broker built with Java and Spring Boot. It acts as a central middleware to connect a legacy hospital system with modern external blood banks.
+
+The primary task is to implement the core integration logic, demonstrating key Enterprise Integration Patterns (EIPs).
 
 | Principle | Where you'll apply it |
 | :--- | :--- |
 | **Data Transformation** | Translating legacy XML formats into internal canonical JSON/Java objects. |
 | **Protocol Translation** | Bridging SFTP polling with outbound REST and SOAP calls. |
 | **Routing Logic** | Implementing scatter-gather patterns to query multiple blood banks and aggregate the results. |
-| **Event Triggers** | Automatically notifying donors via Twilio if blood banks report a shortage. |
+| **Event Triggers** | Automatically notifying donors via an SMS service if blood banks report a shortage. |
 
-## Assessment Structure
+---
 
-| Component | Weight | Recommended Time |
-| :--- | :--- | :--- |
-| Implementation | 50% | 2 hours |
-| Comprehensive Long Question | 50% | 1 hour |
+## 2. Getting Started
 
-### Scoring
-- **Coding Score**  = (tests passed / total tests) × 50%
-- **Long Q Score**  = (marks earned / total marks) × 50%
-- **Final Score**   = Coding Score + Long Q Score
+### Prerequisites
+- Java 21+
+- Maven
+- Docker
 
-## Integration Pipeline (EIP)
+### Setup
+
+1.  **Run Mock Services:**
+    The project requires mock external systems (SFTP, SOAP, REST) to be running. Start them using Docker Compose.
+    ```bash
+    docker-compose up -d
+    ```
+
+2.  **Compile the Project:**
+    ```bash
+    mvn compile
+    ```
+
+3.  **Run Tests:**
+    You can run the test suite at any point to check your implementation against the requirements.
+    ```bash
+    mvn test
+    ```
+
+> **Note:** Do NOT modify any test files or `BrokerApplication.java`. All your work should be within the `transformer`, `router`, and `adapter` packages.
+
+---
+
+## 3. System Architecture
+
+### Integration Pipeline (EIP)
+The system follows a clear integration flow from data ingestion to outbound communication.
 ```text
 SFTP Poller (Inbound)
 └── XmlToCanonicalTransformer
     └── PayloadEnricher
         └── BloodBankRouter (Scatter-Gather)
             ├── LegacyBankSoapAdapter (Bank A)
-            └── ModernBankRestAdapter (Bank B)
-                └── TwilioNotificationAdapter (If shortage)
+            ├── ModernBankRestAdapter (Bank B)
+            └── (Aggregation Step)
+                └── TwilioNotificationAdapter (Conditional: on shortage)
 ```
 
 ## Project Structure

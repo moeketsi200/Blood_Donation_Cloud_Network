@@ -1,1 +1,20 @@
-# docker-compose.yml
+services:
+  blood-broker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: blood-broker:latest
+    container_name: blood-broker
+    ports:
+      - "8080:8080"
+    environment:
+      # Override any Spring Boot properties here, e.g.:
+      # SPRING_PROFILES_ACTIVE: dev
+      JAVA_TOOL_OPTIONS: "-XX:+UseContainerSupport"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
