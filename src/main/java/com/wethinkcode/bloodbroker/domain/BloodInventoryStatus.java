@@ -35,7 +35,7 @@ public class BloodInventoryStatus {
     }
 
     public boolean isEmergencyShortage() {
-        return this.emergencyShortage;
+        return this.unitsAvailable == 0;
     }
 
     public void setEmergencyShortage(boolean emergencyShortage) {
