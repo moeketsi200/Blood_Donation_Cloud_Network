@@ -2,65 +2,73 @@ package com.wethinkcode.bloodbroker.adapter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.sns.SnsClient;
+import software.amazon.awssdk.services.sns.model.PublishRequest;
+import software.amazon.awssdk.services.sns.model.PublishResponse;
 
 /**
- * Step 3c — Outbound Adapter (Event Trigger: SMS / Twilio)
+ * Step 2.4 — Outbound Adapter (Event Trigger: AWS SNS / Donor Alerts)
  *
- * Responsibility: Notify blood donors when no blood bank can satisfy a
+ * Responsibility: Notify blood donors via Amazon SNS when no blood bank can satisfy a
  * hospital's request (emergency shortage).
- *
- * Enterprise Integration Pattern — Event-Driven Consumer:
- *  This adapter is triggered only when the aggregated result from the
- *  scatter-gather step reports an emergency shortage (total units == 0).
- *
- * Twilio integration:
- *  In a production system this would call the Twilio REST API (via the
- *  Twilio Java SDK) to send an SMS to registered donors whose blood type
- *  matches the shortage.
- *
- *  The Twilio SDK is on the classpath (see pom.xml). Real usage looks like:
- *
- *    Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
- *    Message.creator(
- *        new PhoneNumber("+27821234567"),          // donor's number
- *        new PhoneNumber(twilioFromNumber),
- *        "URGENT: We need " + bloodType + " blood. Please donate today!"
- *    ).create();
- *
- *  For this broker we log the alert to avoid requiring real credentials.
  */
 @Component
 public class TwilioNotificationAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(TwilioNotificationAdapter.class);
 
+    @Value("${aws.region:eu-north-1}")
+    private String awsRegion;
+
+    @Value("${aws.sns.topic-arn:}")
+    private String topicArn;
+
+    private SnsClient snsClient;
+
+    public void setSnsClient(SnsClient snsClient) {
+        this.snsClient = snsClient;
+    }
+
+    private SnsClient getSnsClient() {
+        if (this.snsClient == null) {
+            this.snsClient = SnsClient.builder()
+                    .region(Region.of(awsRegion))
+                    .build();
+        }
+        return this.snsClient;
+    }
+
     /**
-     * Triggers a donor alert for the given blood type.
-     *
-     * Called by the router when the aggregated stock for a blood type is zero,
-     * indicating an emergency shortage across all connected blood banks.
+     * Triggers a donor alert for the given blood type by publishing to Amazon SNS.
      *
      * @param bloodType the blood type that is critically short (e.g., "O-Negative")
      */
     public void triggerDonorAlert(String bloodType) {
-        // ── Log the alert (simulates the SMS in the absence of real credentials) ──
         log.warn("🚨 EMERGENCY SHORTAGE ALERT: Blood type '{}' is at ZERO across all banks. "
-               + "Triggering donor notification via Twilio SMS...", bloodType);
+               + "Triggering donor notification...", bloodType);
 
-        // ── In production: initialise Twilio and send SMS ──────────────────────
-        // String accountSid = System.getenv("TWILIO_ACCOUNT_SID");
-        // String authToken  = System.getenv("TWILIO_AUTH_TOKEN");
-        // String fromNumber = System.getenv("TWILIO_FROM_NUMBER");
-        //
-        // Twilio.init(accountSid, authToken);
-        // for (String donorNumber : donorRegistryService.getDonorsForBloodType(bloodType)) {
-        //     Message.creator(
-        //         new PhoneNumber(donorNumber),
-        //         new PhoneNumber(fromNumber),
-        //         "URGENT: " + bloodType + " blood is critically needed. Please donate today!"
-        //     ).create();
-        // }
+        String alertMessage = "URGENT: Blood type " + bloodType + " is critically needed. Please donate today!";
+
+        if (topicArn != null && !topicArn.isBlank()) {
+            try {
+                PublishRequest publishRequest = PublishRequest.builder()
+                        .topicArn(topicArn)
+                        .message(alertMessage)
+                        .subject("EMERGENCY BLOOD SHORTAGE: " + bloodType)
+                        .build();
+
+                PublishResponse response = getSnsClient().publish(publishRequest);
+                log.info("📢 SNS Emergency alert published to topic '{}'. Message ID: {}", topicArn, response.messageId());
+            } catch (Exception e) {
+                log.error("❌ Failed to publish SNS emergency alert for blood type '{}': {}", bloodType, e.getMessage(), e);
+                throw new RuntimeException("Failed to send emergency SNS alert for blood type: " + bloodType, e);
+            }
+        } else {
+            log.info("ℹ️ AWS SNS Topic ARN not set — skipping SNS publish step.");
+        }
 
         log.info("✅ Donor alert dispatched for blood type '{}'.", bloodType);
     }

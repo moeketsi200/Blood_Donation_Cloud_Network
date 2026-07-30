@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🩸 Blood Integration Broker — AWS Cloud Command Console</title>
+
+    <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-dark: #080B11;
+            --bg-card: rgba(18, 25, 41, 0.75);
+            --bg-card-hover: rgba(26, 36, 59, 0.85);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-highlight: rgba(230, 57, 70, 0.3);
+
+            --primary-red: #E63946;
+            --primary-red-glow: rgba(230, 57, 70, 0.4);
+            --accent-teal: #06D6A0;
+            --accent-teal-glow: rgba(6, 214, 160, 0.3);
+            --accent-blue: #3A86FF;
+            --accent-amber: #FFB703;
+            --accent-purple: #8338EC;
+
+            --text-main: #F8F9FA;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+
+            --font-title: 'Outfit', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+            --font-code: 'Fira Code', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(230, 57, 70, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(6, 214, 160, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(58, 134, 255, 0.05) 0%, transparent 60%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            padding-bottom: 60px;
+            min-height: 100vh;
+        }
+
+        /* ── Scrollbar ────────────────────────────────────────── */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-red);
+        }
+
+        /* ── Container Layout ────────────────────────────────── */
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* ── Header Bar ──────────────────────────────────────── */
+        header {
+            background: rgba(12, 17, 29, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-glass);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            padding: 16px 0;
+        }
+
+        .nav-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--primary-red), #B7094C);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            color: white;
+            box-shadow: 0 0 20px var(--primary-red-glow);
+            animation: pulse-glow 3s infinite alternate;
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 15px rgba(230, 57, 70, 0.4); }
+            100% { box-shadow: 0 0 30px rgba(230, 57, 70, 0.8); }
+        }
+
+        .brand-text h1 {
+            font-family: var(--font-title);
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+            background: linear-gradient(90deg, #FFFFFF, #CBD5E1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .cloud-badge {
+            background: rgba(6, 214, 160, 0.12);
+            border: 1px solid rgba(6, 214, 160, 0.3);
+            color: var(--accent-teal);
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .pulse-dot {
+            width: 7px;
+            height: 7px;
+            background-color: var(--accent-teal);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px var(--accent-teal);
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+        }
+
+        .stat-pill {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            padding: 8px 16px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+        }
+
+        .stat-pill i {
+            color: var(--primary-red);
+            font-size: 15px;
+        }
+
+        .stat-pill span {
+            color: var(--text-muted);
+        }
+
+        .stat-pill strong {
+            color: var(--text-main);
+            font-family: var(--font-title);
+        }
+
+        /* ── Grid Layout ──────────────────────────────────────── */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 28px;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ── Glass Cards ──────────────────────────────────────── */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glass);
+            border-radius: 18px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            transition: all 0.3s ease;
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.14);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .card-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-title);
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .card-title i {
+            color: var(--primary-red);
+        }
+
+        .badge-tag {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* ── Form Controls ────────────────────────────────────── */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .form-select, .form-input {
+            width: 100%;
+            background: rgba(10, 14, 23, 0.8);
+            border: 1px solid var(--border-glass);
+            border-radius: 10px;
+            padding: 12px 14px;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-size: 14px;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-select:focus, .form-input:focus {
+            border-color: var(--primary-red);
+            box-shadow: 0 0 12px var(--primary-red-glow);
+        }
+
+        .form-select option {
+            background-color: #0E1626;
+            color: var(--text-main);
+        }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .range-slider {
+            flex: 1;
+            accent-color: var(--primary-red);
+            height: 6px;
+        }
+
+        .range-val {
+            background: rgba(230, 57, 70, 0.15);
+            border: 1px solid var(--primary-red);
+            color: var(--primary-red);
+            font-family: var(--font-title);
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 8px;
+            min-width: 48px;
+            text-align: center;
+        }
+
+        /* ── Code / XML Box ────────────────────────────────────── */
+        .code-box {
+            background: #0A0E17;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 14px;
+            font-family: var(--font-code);
+            font-size: 12.5px;
+            color: #E2E8F0;
+            overflow-x: auto;
+            position: relative;
+            margin-top: 10px;
+            white-space: pre;
+            line-height: 1.5;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            color: var(--text-muted);
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s ease;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        /* ── Buttons ──────────────────────────────────────────── */
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-family: var(--font-title);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.25s ease;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-red), #C01B2B);
+            color: white;
+            box-shadow: 0 4px 15px var(--primary-red-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(230, 57, 70, 0.6);
+        }
+
+        .btn-sqs {
+            background: linear-gradient(135deg, #FF9900, #E67E22);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 153, 0, 0.3);
+        }
+
+        .btn-sqs:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 153, 0, 0.5);
+        }
+
+        .btn-danger-outline {
+            background: rgba(230, 57, 70, 0.1);
+            border: 1px solid var(--primary-red);
+            color: var(--primary-red);
+        }
+
+        .btn-danger-outline:hover {
+            background: var(--primary-red);
+            color: white;
+        }
+
+        /* ── EIP Pipeline Diagram Visualizer ──────────────────── */
+        .pipeline-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .pipeline-node {
+            background: rgba(10, 14, 23, 0.7);
+            border: 1px solid var(--border-glass);
+            border-radius: 12px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .pipeline-node.active {
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 15px var(--accent-teal-glow);
+            background: rgba(6, 214, 160, 0.05);
+        }
+
+        .node-info {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .node-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-blue);
+            font-size: 16px;
+        }
+
+        .pipeline-node.active .node-icon {
+            background: var(--accent-teal);
+            color: #080B11;
+        }
+
+        .node-text h4 {
+            font-family: var(--font-title);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .node-text p {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .node-status {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-dim);
+        }
+
+        .pipeline-node.active .node-status {
+            background: rgba(6, 214, 160, 0.2);
+            color: var(--accent-teal);
+        }
+
+        .pipeline-arrow {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 12px;
+            margin: -4px 0;
+        }
+
+        /* ── Response Output Console ──────────────────────────── */
+        .response-console {
+            margin-top: 28px;
+        }
+
+        .console-tab-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 14px;
+            border-bottom: 1px solid var(--border-glass);
+            padding-bottom: 8px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            font-family: var(--font-title);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-main);
+        }
+
+        .tab-btn i {
+            margin-right: 6px;
+        }
+
+        /* ── Blood Bank Inventory Cards ────────────────────────── */
+        .inventory-section {
+            margin-top: 32px;
+        }
+
+        .inventory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .blood-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: 14px;
+            padding: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .blood-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--primary-red);
+        }
+
+        .blood-type {
+            font-family: var(--font-title);
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-red);
+            margin-bottom: 4px;
+        }
+
+        .bank-stock {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .stock-val {
+            font-weight: 700;
+            color: var(--accent-teal);
+        }
+
+        .stock-val.zero {
+            color: var(--primary-red);
+        }
+
+        /* ── Notification Toast ───────────────────────────────── */
+        .toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+        }
+
+        .toast {
+            background: rgba(18, 25, 41, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--accent-teal);
+            color: white;
+            padding: 14px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13.5px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            border-color: var(--primary-red);
+        }
+
+        .toast-icon {
+            font-size: 18px;
+            color: var(--accent-teal);
+        }
+
+        .toast.error .toast-icon {
+            color: var(--primary-red);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ── HEADER NAVBAR ────────────────────────────────────────────────── -->
+    <header>
+        <div class="app-container">
+            <div class="nav-content">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <div class="brand-text">
+                        <h1>Blood Donation Integration Broker</h1>
+                        <p>
+                            <span class="cloud-badge">
+                                <span class="pulse-dot"></span> AWS Fargate Active
+                            </span>
+                            <span>• Enterprise Integration Middleware</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="header-stats">
+                    <div class="stat-pill">
+                        <i class="fa-solid fa-cloud"></i>
+                        <div>
+                            <span>Region:</span>
+                            <strong id="aws-region-display">eu-north-1</strong>
+                        </div>
+                    </div>
+                    <div class="stat-pill">
+                        <i class="fa-solid fa-network-wired"></i>
+                        <div>
+                            <span>Queue:</span>
+                            <strong id="sqs-status-display">AWS SQS Online</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ── MAIN CONTENT CONTAINER ─────────────────────────────────────── -->
+    <main class="app-container">
+
+        <!-- ── DASHBOARD GRID ─────────────────────────────────────────── -->
+        <div class="dashboard-grid">
+
+            <!-- ── LEFT COLUMN: EMERGENCY DISPATCH CONSOLE ────────────── -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fa-solid fa-truck-medical"></i>
+                        Emergency Hospital Dispatcher
+                    </div>
+                    <span class="badge-tag">XML Generator</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="hospital-select">Select Requesting Hospital</label>
+                    <select id="hospital-select" class="form-select" onchange="updateXmlPayload()">
+                        <option value="HOSP-CHRIS-HANI-BARAGWANATH">Chris Hani Baragwanath Hospital (Soweto)</option>
+                        <option value="HOSP-GROOTE-SCHUUR">Groote Schuur Hospital (Cape Town)</option>
+                        <option value="HOSP-STEVE-BIKO">Steve Biko Academic Hospital (Pretoria)</option>
+                        <option value="HOSP-CHARLOTTE-MAXEKE">Charlotte Maxeke Hospital (Johannesburg)</option>
+                        <option value="CLI-TERMINAL-TEST">CLI Terminal Test Client</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="blood-type-select">Blood Type Required</label>
+                    <select id="blood-type-select" class="form-select" onchange="updateXmlPayload()">
+                        <option value="O-Negative">O-Negative (Universal Donor 🚨)</option>
+                        <option value="O-Positive">O-Positive</option>
+                        <option value="A-Negative">A-Negative</option>
+                        <option value="A-Positive">A-Positive</option>
+                        <option value="B-Negative">B-Negative</option>
+                        <option value="B-Positive">B-Positive</option>
+                        <option value="AB-Negative">AB-Negative</option>
+                        <option value="AB-Positive">AB-Positive</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Units Required: <span id="units-val-display" class="range-val">5</span></label>
+                    <div class="range-container">
+                        <input type="range" id="units-slider" class="range-slider" min="0" max="50" value="5" oninput="updateUnitsDisplay()">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Generated Legacy XML Request Payload</label>
+                    <div class="code-box" id="xml-preview">
+                        <!-- Dynamically generated XML -->
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="runLivePipeline()">
+                        <i class="fa-solid fa-bolt"></i> Run Live Pipeline
+                    </button>
+                    <button class="btn btn-sqs" onclick="publishToSqsQueue()">
+                        <i class="fa-solid fa-cloud-arrow-up"></i> Push to SQS Queue
+                    </button>
+                    <button class="btn btn-danger-outline" onclick="triggerShortageSimulation()">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Simulate 0 Units
+                    </button>
+                </div>
+            </div>
+
+            <!-- ── RIGHT COLUMN: EIP PIPELINE FLOW VISUALIZER ──────────── -->
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fa-solid fa-diagram-project"></i>
+                        EIP Architecture Flow
+                    </div>
+                    <span class="badge-tag">Scatter-Gather Pattern</span>
+                </div>
+
+                <div class="pipeline-flow">
+                    <!-- Step 1: Inbound SQS -->
+                    <div class="pipeline-node" id="node-sqs">
+                        <div class="node-info">
+                            <div class="node-icon"><i class="fa-solid fa-inbox"></i></div>
+                            <div class="node-text">
+                                <h4>1. Inbound SQS Queue</h4>
+                                <p>Ingests hospital XML payloads (replaces legacy SFTP)</p>
+                            </div>
+                        </div>
+                        <span class="node-status">Standby</span>
+                    </div>
+
+                    <div class="pipeline-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <!-- Step 2: XML Transformer -->
+                    <div class="pipeline-node" id="node-transform">
+                        <div class="node-info">
+                            <div class="node-icon"><i class="fa-solid fa-code"></i></div>
+                            <div class="node-text">
+                                <h4>2. Data Translation</h4>
+                                <p>XmlToCanonicalTransformer parses XML to HospitalRequest Java Object</p>
+                            </div>
+                        </div>
+                        <span class="node-status">Standby</span>
+                    </div>
+
+                    <div class="pipeline-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <!-- Step 3: Payload Enricher -->
+                    <div class="pipeline-node" id="node-enrich">
+                        <div class="node-info">
+                            <div class="node-icon"><i class="fa-solid fa-clock"></i></div>
+                            <div class="node-text">
+                                <h4>3. Payload Enricher</h4>
+                                <p>Stamps ISO-8601 UTC timestamp onto canonical request</p>
+                            </div>
+                        </div>
+                        <span class="node-status">Standby</span>
+                    </div>
+
+                    <div class="pipeline-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <!-- Step 4: Scatter-Gather Router -->
+                    <div class="pipeline-node" id="node-router">
+                        <div class="node-info">
+                            <div class="node-icon"><i class="fa-solid fa-route"></i></div>
+                            <div class="node-text">
+                                <h4>4. Scatter-Gather Router</h4>
+                                <p>Queries Bank A (SOAP) & Bank B (REST) concurrently</p>
+                            </div>
+                        </div>
+                        <span class="node-status">Standby</span>
+                    </div>
+
+                    <div class="pipeline-arrow"><i class="fa-solid fa-arrow-down"></i></div>
+
+                    <!-- Step 5: Notification Adapter -->
+                    <div class="pipeline-node" id="node-sns">
+                        <div class="node-info">
+                            <div class="node-icon"><i class="fa-solid fa-bullhorn"></i></div>
+                            <div class="node-text">
+                                <h4>5. Event Trigger (Amazon SNS)</h4>
+                                <p>Publishes emergency shortage SMS/Email alerts if total stock == 0</p>
+                            </div>
+                        </div>
+                        <span class="node-status">Standby</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── RESPONSE CONSOLE & EXECUTION TRACE ─────────────────────── -->
+        <div class="glass-card response-console">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fa-solid fa-terminal"></i>
+                    Execution Trace & Telemetry Console
+                </div>
+                <div class="console-tab-header">
+                    <button class="tab-btn active" onclick="switchTab('trace')">
+                        <i class="fa-solid fa-stream"></i> Pipeline Trace
+                    </button>
+                    <button class="tab-btn" onclick="switchTab('telemetry')">
+                        <i class="fa-solid fa-server"></i> System Telemetry
+                    </button>
+                </div>
+            </div>
+
+            <div class="code-box" id="console-output">
+// Ready to execute integration pipeline. Select parameters above and click "Run Live Pipeline".
+            </div>
+        </div>
+
+        <!-- ── BLOOD BANK INVENTORY GAUGE CARDS ───────────────────────── -->
+        <div class="inventory-section">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-title">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                        Connected Blood Banks Stock Level
+                    </div>
+                    <span class="badge-tag">Bank A (SOAP) + Bank B (REST)</span>
+                </div>
+
+                <div class="inventory-grid" id="inventory-grid">
+                    <!-- Blood stock cards dynamically generated -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- ── TOAST NOTIFICATION ────────────────────────────────────────── -->
+    <div class="toast-container">
+        <div class="toast" id="toast-notification">
+            <i class="fa-solid fa-circle-check toast-icon" id="toast-icon"></i>
+            <span id="toast-text">Notification message</span>
+        </div>
+    </div>
+
+    <!-- ── JAVASCRIPT LOGIC ──────────────────────────────────────────── -->
+    <script>
+        // Initial setup
+        document.addEventListener('DOMContentLoaded', () => {
+            updateXmlPayload();
+            renderBloodInventory();
+            fetchTelemetry();
+        });
+
+        function updateUnitsDisplay() {
+            const val = document.getElementById('units-slider').value;
+            document.getElementById('units-val-display').innerText = val;
+            updateXmlPayload();
+        }
+
+        function updateXmlPayload() {
+            const hospital = document.getElementById('hospital-select').value;
+            const bloodType = document.getElementById('blood-type-select').value;
+            const units = document.getElementById('units-slider').value;
+
+            const xml = `<hospitalRequest>
+    <bloodType>${bloodType}</bloodType>
+    <unitsRequired>${units}</unitsRequired>
+    <hospitalId>${hospital}</hospitalId>
+</hospitalRequest>`;
+
+            document.getElementById('xml-preview').innerText = xml;
+        }
+
+        function triggerShortageSimulation() {
+            document.getElementById('units-slider').value = 0;
+            updateUnitsDisplay();
+            showToast('Simulating emergency shortage (0 units required)', false);
+            runLivePipeline();
+        }
+
+        // ── Step-by-Step Flow Animation Helper ────────────────────────
+        async function animatePipelineNodes(isEmergency) {
+            const nodes = ['node-sqs', 'node-transform', 'node-enrich', 'node-router', 'node-sns'];
+            
+            // Reset all nodes
+            nodes.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('active');
+                el.querySelector('.node-status').innerText = 'Standby';
+            });
+
+            // Animate node by node
+            for (let i = 0; i < nodes.length; i++) {
+                const el = document.getElementById(nodes[i]);
+                el.classList.add('active');
+                el.querySelector('.node-status').innerText = 'Processing...';
+                await new Promise(r => setTimeout(r, 220));
+                
+                if (i === nodes.length - 1) {
+                    el.querySelector('.node-status').innerText = isEmergency ? '🚨 SHORTAGE ALERT SENT' : '✅ STOCK AVAILABLE';
+                } else {
+                    el.querySelector('.node-status').innerText = '✅ OK';
+                }
+            }
+        }
+
+        // ── Run Live Synchronous Pipeline ──────────────────────────────
+        async function runLivePipeline() {
+            const xmlPayload = document.getElementById('xml-preview').innerText;
+            document.getElementById('console-output').innerText = '// Executing integration pipeline... Please wait...';
+
+            try {
+                const res = await fetch('/api/broker/process-xml', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/xml' },
+                    body: xmlPayload
+                });
+
+                const data = await res.json();
+                document.getElementById('console-output').innerText = JSON.stringify(data, null, 2);
+
+                const isEmergency = data.emergency_alert_triggered === true;
+                await animatePipelineNodes(isEmergency);
+
+                if (isEmergency) {
+                    showToast('🚨 Emergency Shortage Alert Dispatched to Amazon SNS!', true);
+                } else {
+                    showToast('✅ Request processed. Stock available across banks.', false);
+                }
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('console-output').innerText = '// Error: ' + err.message;
+                showToast('Failed to execute pipeline: ' + err.message, true);
+            }
+        }
+
+        // ── Publish Message directly to SQS ────────────────────────────
+        async function publishToSqsQueue() {
+            const xmlPayload = document.getElementById('xml-preview').innerText;
+            showToast('Sending message to Amazon SQS...', false);
+
+            try {
+                const res = await fetch('/api/broker/sqs/publish', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/xml' },
+                    body: xmlPayload
+                });
+
+                const data = await res.json();
+                document.getElementById('console-output').innerText = JSON.stringify(data, null, 2);
+
+                if (data.status === 'SUCCESS') {
+                    showToast(`✅ SQS Message Dispatched! ID: ${data.message_id.substring(0, 12)}...`, false);
+                } else {
+                    showToast(`Error: ${data.error}`, true);
+                }
+
+            } catch (err) {
+                console.error(err);
+                showToast('Failed to connect to SQS API endpoint', true);
+            }
+        }
+
+        // ── Telemetry Fetch ────────────────────────────────────────────
+        async function fetchTelemetry() {
+            try {
+                const res = await fetch('/api/broker/telemetry');
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('aws-region-display').innerText = data.aws_region || 'eu-north-1';
+                    if (data.sqs_queue) {
+                        document.getElementById('sqs-status-display').innerText = 'AWS SQS Active';
+                    }
+                }
+            } catch (e) {
+                console.log('Telemetry fetch skipped');
+            }
+        }
+
+        // ── Tab Switching ──────────────────────────────────────────────
+        async function switchTab(tab) {
+            const btns = document.querySelectorAll('.tab-btn');
+            btns.forEach(b => b.classList.remove('active'));
+
+            if (tab === 'trace') {
+                btns[0].classList.add('active');
+            } else {
+                btns[1].classList.add('active');
+                try {
+                    const res = await fetch('/api/broker/telemetry');
+                    const data = await res.json();
+                    document.getElementById('console-output').innerText = JSON.stringify(data, null, 2);
+                } catch (e) {}
+            }
+        }
+
+        // ── Render Blood Inventory Gauges ──────────────────────────────
+        function renderBloodInventory() {
+            const types = ['O-Negative', 'O-Positive', 'A-Negative', 'A-Positive', 'B-Negative', 'B-Positive', 'AB-Negative', 'AB-Positive'];
+            const container = document.getElementById('inventory-grid');
+            container.innerHTML = '';
+
+            types.forEach((type, idx) => {
+                const bankAUnits = idx === 0 ? 0 : Math.floor(Math.random() * 8) + 2;
+                const bankBUnits = idx === 0 ? 0 : Math.floor(Math.random() * 6) + 1;
+                const total = bankAUnits + bankBUnits;
+
+                const card = document.createElement('div');
+                card.className = 'blood-card';
+                card.innerHTML = `
+                    <div class="blood-type">${type}</div>
+                    <div style="font-size:12px; color:var(--text-muted); font-weight:600;">
+                        Total Available: <span class="${total === 0 ? 'stock-val zero' : 'stock-val'}">${total} Units</span>
+                    </div>
+                    <div class="bank-stock">
+                        <span>Bank A (SOAP): <strong class="stock-val">${bankAUnits}</strong></span>
+                        <span>Bank B (REST): <strong class="stock-val">${bankBUnits}</strong></span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // ── Toast Notification Helper ──────────────────────────────────
+        function showToast(msg, isError) {
+            const toast = document.getElementById('toast-notification');
+            const icon = document.getElementById('toast-icon');
+            const text = document.getElementById('toast-text');
+
+            text.innerText = msg;
+            toast.className = `toast show ${isError ? 'error' : ''}`;
+            icon.className = `fa-solid ${isError ? 'fa-triangle-exclamation' : 'fa-circle-check'} toast-icon`;
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
