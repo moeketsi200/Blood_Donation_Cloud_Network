@@ -86,15 +86,10 @@ public class BrokerRestController {
             BloodInventoryStatus aggregated = router.aggregate(bankReplies);
             trace.put("step5_aggregated_status", aggregated);
 
-            // Step 4.5: Save to Database & Reserve Inventory
+            // Step 4.5: Save to Database
             aggregated.setBloodType(enriched.getBloodType());
             inventoryRepository.save(aggregated);
             trace.put("step6_database_save", "Saved aggregated stock to DynamoDB Table 'BloodInventory'");
-
-            // Step 4.75: Actual Inventory Reservation!
-            int requestedUnits = enriched.getUnitsRequired();
-            int reserved = inventoryRepository.reserveInventory(enriched.getBloodType(), requestedUnits);
-            trace.put("step7_inventory_reservation", "Reserved " + reserved + " of " + requestedUnits + " requested units across AWS banks.");
 
             // Step 5: Event Trigger (SMS / SNS on emergency shortage)
             boolean isEmergency = aggregated.isEmergencyShortage();
@@ -115,6 +110,28 @@ public class BrokerRestController {
             trace.put("status", "ERROR");
             trace.put("error_message", e.getMessage());
             return ResponseEntity.badRequest().body(trace);
+        }
+    }
+
+    @PostMapping("/reserve")
+    public ResponseEntity<Map<String, Object>> reserveInventory(@RequestBody String rawXml) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            HospitalRequest request = transformer.transform(rawXml);
+            int requestedUnits = request.getUnitsRequired();
+            int reserved = inventoryRepository.reserveInventory(request.getBloodType(), requestedUnits);
+            
+            response.put("status", "SUCCESS");
+            response.put("reserved_units", reserved);
+            response.put("requested_units", requestedUnits);
+            response.put("blood_type", request.getBloodType());
+            response.put("message", "Successfully reserved " + reserved + " units of " + request.getBloodType());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Failed to reserve inventory: {}", e.getMessage(), e);
+            response.put("status", "ERROR");
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
         }
     }
 

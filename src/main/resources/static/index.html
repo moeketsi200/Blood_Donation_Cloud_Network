@@ -730,6 +730,9 @@
                     <button class="btn btn-primary" onclick="runLivePipeline()">
                         <i class="fa-solid fa-bolt"></i> Run Live Pipeline
                     </button>
+                    <button class="btn btn-primary" style="background:var(--primary-red);" onclick="reserveBlood()">
+                        <i class="fa-solid fa-droplet"></i> Reserve Blood
+                    </button>
                     <button class="btn btn-sqs" onclick="publishToSqsQueue()">
                         <i class="fa-solid fa-cloud-arrow-up"></i> Push to SQS Queue
                     </button>
@@ -973,17 +976,48 @@
 
                 // ── Instantly update the visual gauges with the new AWS numbers! ──
                 await renderBloodInventory();
-                
-                // ── Add to Recent Hospital Requests Feed ──
-                const hospital = document.getElementById('hospital-select').value;
-                const bloodType = document.getElementById('blood-type-select').value;
-                const units = document.getElementById('units-slider').value;
-                addRecentRequest(hospital, bloodType, units, data.step7_inventory_reservation);
 
             } catch (err) {
                 console.error(err);
                 document.getElementById('console-output').innerText = '// Error: ' + err.message;
                 showToast('Failed to execute pipeline: ' + err.message, true);
+            }
+        }
+
+        // ── Reserve Blood Only ─────────────────────────────────────────
+        async function reserveBlood() {
+            const xmlPayload = document.getElementById('xml-preview').innerText;
+            document.getElementById('console-output').innerText = '// Reserving blood in AWS DynamoDB... Please wait...';
+
+            try {
+                const res = await fetch('/api/broker/reserve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/xml' },
+                    body: xmlPayload
+                });
+
+                const data = await res.json();
+                document.getElementById('console-output').innerText = JSON.stringify(data, null, 2);
+
+                if (data.status === 'SUCCESS') {
+                    showToast(data.message, false);
+                    
+                    // Update visual gauges
+                    await renderBloodInventory();
+                    
+                    // Add to feed
+                    const hospital = document.getElementById('hospital-select').value;
+                    const bloodType = document.getElementById('blood-type-select').value;
+                    const units = document.getElementById('units-slider').value;
+                    addRecentRequest(hospital, bloodType, units, data.message);
+                } else {
+                    showToast('Failed to reserve blood: ' + data.error, true);
+                }
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('console-output').innerText = '// Error: ' + err.message;
+                showToast('Failed to reserve blood: ' + err.message, true);
             }
         }
 
