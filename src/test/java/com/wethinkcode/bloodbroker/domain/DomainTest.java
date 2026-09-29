@@ -7,25 +7,25 @@ class DomainTest {
 
     // ── Custom Assertions ────────────────────────────────────────────────────
     
-    private void assertHospitalRequest(HospitalRequest request, String expectedType, int expectedUnits, String expectedHospital, String expectedTimestamp) {
-        assertEquals(expectedType, request.getBloodType());
-        assertEquals(expectedUnits, request.getUnitsRequired());
-        assertEquals(expectedHospital, request.getHospitalId());
-        assertEquals(expectedTimestamp, request.getTimestamp());
+    private void assertHospitalRequest(HospitalRequest actual, HospitalRequest expected) {
+        assertEquals(expected.getBloodType(), actual.getBloodType());
+        assertEquals(expected.getUnitsRequired(), actual.getUnitsRequired());
+        assertEquals(expected.getHospitalId(), actual.getHospitalId());
+        assertEquals(expected.getTimestamp(), actual.getTimestamp());
     }
 
-    private void assertBloodInventoryStatus(BloodInventoryStatus status, String expectedBank, String expectedType, int expectedUnits, boolean expectedShortage) {
-        assertEquals(expectedBank, status.getBankName());
-        assertEquals(expectedType, status.getBloodType());
-        assertEquals(expectedUnits, status.getUnitsAvailable());
-        assertEquals(expectedShortage, status.isEmergencyShortage());
+    private void assertBloodInventoryStatus(BloodInventoryStatus actual, BloodInventoryStatus expected) {
+        assertEquals(expected.getBankName(), actual.getBankName());
+        assertEquals(expected.getBloodType(), actual.getBloodType());
+        assertEquals(expected.getUnitsAvailable(), actual.getUnitsAvailable());
+        assertEquals(expected.isEmergencyShortage(), actual.isEmergencyShortage());
     }
 
-    private void assertEmergencyAlert(EmergencyAlert alert, String expectedType, String expectedHospital, String expectedTimestamp, int expectedUnits) {
-        assertEquals(expectedType, alert.getBloodType());
-        assertEquals(expectedHospital, alert.getHospitalId());
-        assertEquals(expectedTimestamp, alert.getTimestamp());
-        assertEquals(expectedUnits, alert.getUnitsRequired());
+    private void assertEmergencyAlert(EmergencyAlert actual, EmergencyAlert expected) {
+        assertEquals(expected.getBloodType(), actual.getBloodType());
+        assertEquals(expected.getHospitalId(), actual.getHospitalId());
+        assertEquals(expected.getTimestamp(), actual.getTimestamp());
+        assertEquals(expected.getUnitsRequired(), actual.getUnitsRequired());
     }
 
     // ── HospitalRequest ───────────────────────────────────────────────────────
@@ -38,13 +38,25 @@ class DomainTest {
         request.setHospitalId("HOSP-123");
         request.setTimestamp("2023-10-01T10:00:00Z");
 
-        assertHospitalRequest(request, "O-Negative", 10, "HOSP-123", "2023-10-01T10:00:00Z");
+        HospitalRequest expected = new HospitalRequest();
+        expected.setBloodType("O-Negative");
+        expected.setUnitsRequired(10);
+        expected.setHospitalId("HOSP-123");
+        expected.setTimestamp("2023-10-01T10:00:00Z");
+
+        assertHospitalRequest(request, expected);
     }
 
     @Test
     void testHospitalRequestAllArgsConstructor() {
         HospitalRequest request = new HospitalRequest("AB-Positive", 2, "HOSP-XYZ");
-        assertHospitalRequest(request, "AB-Positive", 2, "HOSP-XYZ", null);
+        
+        HospitalRequest expected = new HospitalRequest();
+        expected.setBloodType("AB-Positive");
+        expected.setUnitsRequired(2);
+        expected.setHospitalId("HOSP-XYZ");
+        
+        assertHospitalRequest(request, expected);
     }
 
     // ── BloodInventoryStatus ─────────────────────────────────────────────────
@@ -56,13 +68,20 @@ class DomainTest {
         status.setUnitsAvailable(5);
         status.setEmergencyShortage(false);
 
-        assertBloodInventoryStatus(status, "Bank A", "UNKNOWN", 5, false);
+        BloodInventoryStatus expected = new BloodInventoryStatus();
+        expected.setBankName("Bank A");
+        expected.setUnitsAvailable(5);
+        expected.setEmergencyShortage(false);
+
+        assertBloodInventoryStatus(status, expected);
     }
 
     @Test
     void testBloodInventoryStatusAllArgsConstructor() {
         BloodInventoryStatus status = new BloodInventoryStatus("Bank C", "O-Positive", 7, false);
-        assertBloodInventoryStatus(status, "Bank C", "O-Positive", 7, false);
+        BloodInventoryStatus expected = new BloodInventoryStatus("Bank C", "O-Positive", 7, false);
+        
+        assertBloodInventoryStatus(status, expected);
     }
 
     @Test
@@ -81,7 +100,9 @@ class DomainTest {
     @Test
     void testEmergencyAlertConstructorAndGetters() {
         EmergencyAlert alert = new EmergencyAlert("O-Negative", "HOSP-007", "2024-01-01T00:00:00Z", 5);
-        assertEmergencyAlert(alert, "O-Negative", "HOSP-007", "2024-01-01T00:00:00Z", 5);
+        EmergencyAlert expected = new EmergencyAlert("O-Negative", "HOSP-007", "2024-01-01T00:00:00Z", 5);
+        
+        assertEmergencyAlert(alert, expected);
     }
 
     @Test
@@ -93,6 +114,7 @@ class DomainTest {
         alert.setTimestamp("2025-01-01T00:00:00Z");
         alert.setUnitsRequired(10);
 
-        assertEmergencyAlert(alert, "B-Negative", "HOSP-999", "2025-01-01T00:00:00Z", 10);
+        EmergencyAlert expected = new EmergencyAlert("B-Negative", "HOSP-999", "2025-01-01T00:00:00Z", 10);
+        assertEmergencyAlert(alert, expected);
     }
 }
