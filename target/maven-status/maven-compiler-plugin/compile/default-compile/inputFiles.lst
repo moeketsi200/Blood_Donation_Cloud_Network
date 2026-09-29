@@ -6,6 +6,7 @@
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/repository/BloodInventoryRepository.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/domain/EmergencyAlert.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/BrokerApplication.java
+/home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/service/EipPipelineService.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/config/SftpInboundConfig.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/transformer/PayloadEnricher.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/domain/BloodInventoryStatus.java
@@ -13,4 +14,5 @@
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/config/DynamoDbConfig.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/controller/BrokerRestController.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/transformer/XmlToCanonicalTransformer.java
+/home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/controller/BrokerDependencies.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/main/java/com/wethinkcode/bloodbroker/config/WebServiceConfig.java

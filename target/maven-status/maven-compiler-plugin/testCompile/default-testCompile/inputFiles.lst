@@ -1,6 +1,10 @@
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/test/java/com/wethinkcode/bloodbroker/transformer/PayloadEnricherTest.java
+/home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/test/java/com/wethinkcode/bloodbroker/controller/BrokerRestControllerTest.java
+/home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/test/java/com/wethinkcode/bloodbroker/config/DataSeederTest.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/test/java/com/wethinkcode/bloodbroker/config/SftpInboundConfigTest.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/test/java/com/wethinkcode/bloodbroker/domain/DomainTest.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/test/java/com/wethinkcode/bloodbroker/router/BloodBankRouterTest.java
+/home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/test/java/com/wethinkcode/bloodbroker/repository/BloodInventoryRepositoryTest.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/test/java/com/wethinkcode/bloodbroker/adapter/AdapterTest.java
+/home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/test/java/com/wethinkcode/bloodbroker/BrokerApplicationTest.java
 /home/wtc09/Personal_projects/Blood_Donation_Cloud_Network/src/test/java/com/wethinkcode/bloodbroker/transformer/XmlToCanonicalTransformerTest.java
