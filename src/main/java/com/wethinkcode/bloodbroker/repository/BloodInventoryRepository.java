@@ -25,6 +25,29 @@ public class BloodInventoryRepository {
         return inventoryTable.getItem(r -> r.key(k -> k.partitionValue(bankName).sortValue(bloodType)));
     }
 
+    public int reserveInventory(String bloodType, int requestedUnits) {
+        List<BloodInventoryStatus> allBanks = getAllInventory().stream()
+                .filter(b -> b.getBloodType().equals(bloodType) && b.getUnitsAvailable() > 0)
+                .collect(Collectors.toList());
+
+        int unitsToFulfill = requestedUnits;
+        for (BloodInventoryStatus bank : allBanks) {
+            if (unitsToFulfill <= 0) break;
+            
+            int available = bank.getUnitsAvailable();
+            if (available >= unitsToFulfill) {
+                bank.setUnitsAvailable(available - unitsToFulfill);
+                unitsToFulfill = 0;
+            } else {
+                bank.setUnitsAvailable(0);
+                unitsToFulfill -= available;
+            }
+            save(bank);
+        }
+        
+        return requestedUnits - unitsToFulfill; // return number of units successfully reserved
+    }
+
     public List<BloodInventoryStatus> getAllInventory() {
         return inventoryTable.scan().items().stream().collect(Collectors.toList());
     }

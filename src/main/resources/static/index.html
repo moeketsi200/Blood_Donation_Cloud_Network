@@ -957,6 +957,9 @@
                     showToast('✅ Request processed. Stock available across banks.', false);
                 }
 
+                // ── Instantly update the visual gauges with the new AWS numbers! ──
+                await renderBloodInventory();
+
             } catch (err) {
                 console.error(err);
                 document.getElementById('console-output').innerText = '// Error: ' + err.message;
