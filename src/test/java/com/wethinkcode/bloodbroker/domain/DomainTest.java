@@ -47,9 +47,10 @@ class DomainTest {
 
     @Test
     void testBloodInventoryStatusAllArgsConstructor() {
-        BloodInventoryStatus status = new BloodInventoryStatus("Bank C", 7, false);
+        BloodInventoryStatus status = new BloodInventoryStatus("Bank C", "O-Positive", 7, false);
 
         assertEquals("Bank C", status.getBankName());
+        assertEquals("O-Positive", status.getBloodType());
         assertEquals(7, status.getUnitsAvailable());
         assertFalse(status.isEmergencyShortage());
     }
