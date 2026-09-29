@@ -42,19 +42,14 @@ public class BrokerRestController {
     @Value("${aws.sqs.queue-url:}")
     private String queueUrl;
 
-    public BrokerRestController(XmlToCanonicalTransformer transformer,
-                                PayloadEnricher enricher,
-                                LegacyBankSoapAdapter soapAdapter,
-                                ModernBankRestAdapter restAdapter,
-                                BloodBankRouter router,
-                                TwilioNotificationAdapter notificationAdapter,
+    public BrokerRestController(BrokerDependencies dependencies,
                                 BloodInventoryRepository inventoryRepository) {
-        this.transformer = transformer;
-        this.enricher = enricher;
-        this.soapAdapter = soapAdapter;
-        this.restAdapter = restAdapter;
-        this.router = router;
-        this.notificationAdapter = notificationAdapter;
+        this.transformer = dependencies.getTransformer();
+        this.enricher = dependencies.getEnricher();
+        this.soapAdapter = dependencies.getSoapAdapter();
+        this.restAdapter = dependencies.getRestAdapter();
+        this.router = dependencies.getRouter();
+        this.notificationAdapter = dependencies.getNotificationAdapter();
         this.inventoryRepository = inventoryRepository;
     }
 
