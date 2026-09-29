@@ -135,6 +135,35 @@ public class BrokerRestController {
         }
     }
 
+    @PostMapping("/supply")
+    public ResponseEntity<Map<String, Object>> supplyInventory(@RequestBody Map<String, Object> payload) {
+        Map<String, Object> response = new LinkedHashMap<>();
+        try {
+            String bankName = (String) payload.getOrDefault("bankName", "Local Blood Drive");
+            String bloodType = (String) payload.getOrDefault("bloodType", "O-Positive");
+            int units = Integer.parseInt(payload.getOrDefault("units", "1").toString());
+
+            BloodInventoryStatus existing = inventoryRepository.getStatus(bankName, bloodType);
+            if (existing != null) {
+                existing.setUnitsAvailable(existing.getUnitsAvailable() + units);
+                existing.setEmergencyShortage(existing.getUnitsAvailable() == 0);
+                inventoryRepository.save(existing);
+            } else {
+                BloodInventoryStatus newBank = new BloodInventoryStatus(bankName, bloodType, units, false);
+                inventoryRepository.save(newBank);
+            }
+
+            response.put("status", "SUCCESS");
+            response.put("message", "Successfully added " + units + " units of " + bloodType + " to " + bankName);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Failed to supply inventory: {}", e.getMessage(), e);
+            response.put("status", "ERROR");
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
     /**
      * Publishes a raw XML message directly to the AWS SQS Queue.
      */
