@@ -8,6 +8,7 @@ import com.wethinkcode.bloodbroker.domain.HospitalRequest;
 import com.wethinkcode.bloodbroker.router.BloodBankRouter;
 import com.wethinkcode.bloodbroker.transformer.PayloadEnricher;
 import com.wethinkcode.bloodbroker.transformer.XmlToCanonicalTransformer;
+import com.wethinkcode.bloodbroker.repository.BloodInventoryRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,6 +34,7 @@ public class BrokerRestController {
     private final ModernBankRestAdapter restAdapter;
     private final BloodBankRouter router;
     private final TwilioNotificationAdapter notificationAdapter;
+    private final BloodInventoryRepository inventoryRepository;
 
     @Value("${aws.region:eu-north-1}")
     private String awsRegion;
@@ -45,13 +47,15 @@ public class BrokerRestController {
                                 LegacyBankSoapAdapter soapAdapter,
                                 ModernBankRestAdapter restAdapter,
                                 BloodBankRouter router,
-                                TwilioNotificationAdapter notificationAdapter) {
+                                TwilioNotificationAdapter notificationAdapter,
+                                BloodInventoryRepository inventoryRepository) {
         this.transformer = transformer;
         this.enricher = enricher;
         this.soapAdapter = soapAdapter;
         this.restAdapter = restAdapter;
         this.router = router;
         this.notificationAdapter = notificationAdapter;
+        this.inventoryRepository = inventoryRepository;
     }
 
     /**
@@ -81,6 +85,11 @@ public class BrokerRestController {
             // Step 4: Scatter-Gather Aggregation
             BloodInventoryStatus aggregated = router.aggregate(bankReplies);
             trace.put("step5_aggregated_status", aggregated);
+
+            // Step 4.5: Save to Database
+            aggregated.setBloodType(enriched.getBloodType());
+            inventoryRepository.save(aggregated);
+            trace.put("step6_database_save", "Saved aggregated stock to DynamoDB Table 'BloodInventory'");
 
             // Step 5: Event Trigger (SMS / SNS on emergency shortage)
             boolean isEmergency = aggregated.isEmergencyShortage();
@@ -140,6 +149,16 @@ public class BrokerRestController {
         }
     }
 
+    @GetMapping("/inventory")
+    public ResponseEntity<?> getDatabaseInventory() {
+        try {
+            return ResponseEntity.ok(inventoryRepository.getAllInventory());
+        } catch (Exception e) {
+            log.error("Failed to fetch inventory from DynamoDB: {}", e.getMessage());
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     /**
      * Returns system telemetry & live infrastructure status for the dashboard header.
      */
@@ -151,7 +170,7 @@ public class BrokerRestController {
         telemetry.put("environment", "AWS Cloud Fargate");
         telemetry.put("aws_region", awsRegion);
         telemetry.put("sqs_queue", queueUrl);
-        telemetry.put("connected_adapters", List.of("LegacyBankSoapAdapter (Bank A)", "ModernBankRestAdapter (Bank B)", "TwilioNotificationAdapter (SNS)"));
+        telemetry.put("connected_adapters", List.of("LegacyBankSoapAdapter (Bank A)", "ModernBankRestAdapter (Bank B)", "TwilioNotificationAdapter (SNS)", "DynamoDB (AWS Data Store)"));
         telemetry.put("uptime_status", "HEALTHY_ONLINE");
         telemetry.put("server_time", new Date().toString());
         return ResponseEntity.ok(telemetry);

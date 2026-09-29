@@ -1025,30 +1025,46 @@
         }
 
         // ── Render Blood Inventory Gauges ──────────────────────────────
-        function renderBloodInventory() {
+        async function renderBloodInventory() {
             const types = ['O-Negative', 'O-Positive', 'A-Negative', 'A-Positive', 'B-Negative', 'B-Positive', 'AB-Negative', 'AB-Positive'];
             const container = document.getElementById('inventory-grid');
             container.innerHTML = '';
 
-            types.forEach((type, idx) => {
-                const bankAUnits = idx === 0 ? 0 : Math.floor(Math.random() * 8) + 2;
-                const bankBUnits = idx === 0 ? 0 : Math.floor(Math.random() * 6) + 1;
-                const total = bankAUnits + bankBUnits;
+            try {
+                const res = await fetch('/api/broker/inventory');
+                let dbData = [];
+                if (res.ok) {
+                    dbData = await res.json();
+                }
 
-                const card = document.createElement('div');
-                card.className = 'blood-card';
-                card.innerHTML = `
-                    <div class="blood-type">${type}</div>
-                    <div style="font-size:12px; color:var(--text-muted); font-weight:600;">
-                        Total Available: <span class="${total === 0 ? 'stock-val zero' : 'stock-val'}">${total} Units</span>
-                    </div>
-                    <div class="bank-stock">
-                        <span>Bank A (SOAP): <strong class="stock-val">${bankAUnits}</strong></span>
-                        <span>Bank B (REST): <strong class="stock-val">${bankBUnits}</strong></span>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
+                types.forEach((type) => {
+                    // Find actual units across all banks for this specific blood type
+                    let totalUnits = 0;
+                    
+                    dbData.forEach(item => {
+                        if (item.bloodType === type) {
+                            totalUnits += item.unitsAvailable;
+                        }
+                    });
+
+                    // For the UI cards, we just show the total pulled from DB
+                    const card = document.createElement('div');
+                    card.className = 'blood-card';
+                    card.innerHTML = `
+                        <div class="blood-type">${type}</div>
+                        <div style="font-size:12px; color:var(--text-muted); font-weight:600;">
+                            Total Available: <span class="${totalUnits === 0 ? 'stock-val zero' : 'stock-val'}">${totalUnits} Units</span>
+                        </div>
+                        <div class="bank-stock">
+                            <span>AWS Live Data</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (err) {
+                console.error("Failed to fetch live inventory", err);
+                container.innerHTML = '<div style="color:var(--primary-red);">Error loading live inventory from AWS.</div>';
+            }
         }
 
         // ── Toast Notification Helper ──────────────────────────────────

@@ -2,6 +2,8 @@ package com.wethinkcode.bloodbroker.repository;
 
 import com.wethinkcode.bloodbroker.domain.BloodInventoryStatus;
 import org.springframework.stereotype.Repository;
+import java.util.List;
+import java.util.stream.Collectors;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
@@ -19,7 +21,11 @@ public class BloodInventoryRepository {
         inventoryTable.putItem(status);
     }
 
-    public BloodInventoryStatus getStatus(String bankName) {
-        return inventoryTable.getItem(r -> r.key(k -> k.partitionValue(bankName)));
+    public BloodInventoryStatus getStatus(String bankName, String bloodType) {
+        return inventoryTable.getItem(r -> r.key(k -> k.partitionValue(bankName).sortValue(bloodType)));
+    }
+
+    public List<BloodInventoryStatus> getAllInventory() {
+        return inventoryTable.scan().items().stream().collect(Collectors.toList());
     }
 }

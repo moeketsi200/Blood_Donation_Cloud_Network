@@ -7,6 +7,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 import software.amazon.awssdk.services.sns.SnsClient;
 import software.amazon.awssdk.services.sns.model.PublishRequest;
 import software.amazon.awssdk.services.sns.model.PublishResponse;
+import com.wethinkcode.bloodbroker.repository.BloodInventoryRepository;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,7 +29,11 @@ class AdapterTest {
 
     @Test
     void testModernBankRestAdapter() {
-        ModernBankRestAdapter adapter = new ModernBankRestAdapter();
+        BloodInventoryRepository mockRepo = mock(BloodInventoryRepository.class);
+        BloodInventoryStatus mockStatus = new BloodInventoryStatus("Modern Bank B", "A-Positive", 3, false);
+        when(mockRepo.getStatus("Modern Bank B", "A-Positive")).thenReturn(mockStatus);
+        
+        ModernBankRestAdapter adapter = new ModernBankRestAdapter(mockRepo);
         HospitalRequest request = new HospitalRequest();
         request.setBloodType("A-Positive");
 

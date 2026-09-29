@@ -5,6 +5,7 @@ import com.wethinkcode.bloodbroker.domain.HospitalRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import com.wethinkcode.bloodbroker.repository.BloodInventoryRepository;
 
 /**
  * Step 3b — Outbound Adapter (Protocol Translation: REST)
@@ -28,6 +29,12 @@ public class ModernBankRestAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(ModernBankRestAdapter.class);
 
+    private final BloodInventoryRepository repository;
+
+    public ModernBankRestAdapter(BloodInventoryRepository repository) {
+        this.repository = repository;
+    }
+
     /**
      * Queries the blood inventory at Blood Bank B (Modern REST service).
      *
@@ -42,8 +49,24 @@ public class ModernBankRestAdapter {
         // In production: POST JSON → receive JSON → deserialize with Jackson.
         BloodInventoryStatus status = new BloodInventoryStatus();
         status.setBankName("Modern Bank B");
-        status.setUnitsAvailable(3);          // mock: Bank B has 3 units on hand
-        status.setEmergencyShortage(false);
+        
+        try {
+            // Attempt to fetch real live data from AWS DynamoDB!
+            BloodInventoryStatus realStatus = repository.getStatus("Modern Bank B", request.getBloodType());
+            if (realStatus != null) {
+                status.setUnitsAvailable(realStatus.getUnitsAvailable());
+                log.info("[REST] Successfully fetched live data from AWS DynamoDB!");
+            } else {
+                status.setUnitsAvailable(0);
+                log.info("[REST] AWS DynamoDB has no record for this bank. Defaulting to 0.");
+            }
+        } catch (Exception e) {
+            // If AWS credentials aren't set or internet is down, fallback to mock data
+            log.error("[REST] Failed to connect to AWS DynamoDB: {}. Falling back to mock data.", e.getMessage());
+            status.setUnitsAvailable(3); // fallback mock
+        }
+        
+        status.setEmergencyShortage(status.getUnitsAvailable() == 0);
 
         log.info("[REST] Modern Bank B responded: {} units available", status.getUnitsAvailable());
         return status;
