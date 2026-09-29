@@ -15,33 +15,81 @@ The primary task is to implement the core integration logic, demonstrating key E
 
 ---
 
-## 2. Getting Started
+## 2. Getting Started & How to Run
 
 ### Prerequisites
 - Java 21+
-- Maven
-- Docker
+- Maven 3.9+
+- Docker & Docker Compose (Optional for containerized run)
 
-### Setup
+---
 
-1.  **Run Mock Services:**
-    The project requires mock external systems (SFTP, SOAP, REST) to be running. Start them using Docker Compose.
+### Option A: Run Locally via Maven (Recommended for Development)
+
+1. **Compile & Build Project:**
+   ```bash
+   mvn clean package -DskipTests
+   ```
+
+2. **Run Application Server:**
+   ```bash
+   mvn spring-boot:run
+   ```
+   *Alternatively, run the packaged fat JAR directly:*
+   ```bash
+   java -jar target/blood-integration-broker-1.0-SNAPSHOT.jar
+   ```
+
+3. **Access Frontend Dashboard:**
+   Open your browser and navigate to:
+   ```text
+   http://localhost:8080/
+   ```
+
+---
+
+### Option B: Run via Docker Compose (Containerized Production Mode)
+
+1. **Build & Start Containers:**
+   ```bash
+   docker-compose up --build -d
+   ```
+
+2. **Check Container Status:**
+   ```bash
+   docker-compose ps
+   ```
+
+3. **Stream Application Logs:**
+   ```bash
+   docker-compose logs -f blood-broker
+   ```
+
+4. **Stop Container Services:**
+   ```bash
+   docker-compose down
+   ```
+
+---
+
+### Troubleshooting Common Issues
+
+#### 1. `Port 8080 was already in use`
+- **Cause**: An instance of the Spring Boot application (or Docker container) is already running in the background listening on port `8080`.
+- **Solution**:
+  - Open `http://localhost:8080/` in your browser directly to access the running server.
+  - Or terminate the active process using port 8080 before re-launching:
     ```bash
-    docker-compose up -d
+    fuser -k 8080/tcp
+    # Or on Linux:
+    kill $(lsof -t -i:8080)
     ```
 
-2.  **Compile the Project:**
-    ```bash
-    mvn compile
-    ```
-
-3.  **Run Tests:**
-    You can run the test suite at any point to check your implementation against the requirements.
-    ```bash
-    mvn test
-    ```
-
-> **Note:** Do NOT modify any test files or `BrokerApplication.java`. All your work should be within the `transformer`, `router`, and `adapter` packages.
+#### 2. `GH013: Repository rule violations (Push cannot contain secrets)`
+- **Cause**: GitHub Secret Scanning blocked `git push` because hardcoded AWS credentials were detected.
+- **Solution**:
+  - If the keys are test/dummy credentials, follow the GitHub URLs printed in the terminal output to unblock the push.
+  - Ensure sensitive credentials are environment variables, and add configuration files to `.gitignore`.
 
 ---
 
@@ -160,3 +208,51 @@ Coordinate the adapters using a Scatter-Gather pattern.
 **BloodBankRouter**
 - Method: `public BloodInventoryStatus aggregate(List<BloodInventoryStatus> replies)`
 - Details: Takes the responses from both Bank A and Bank B. Sums up the `unitsAvailable`. If the total units across all replies is `0`, it sets `emergencyShortage` to `true` on the aggregated result, otherwise `false`. Returns the aggregated `BloodInventoryStatus`.
+
+---
+
+## 5. Frontend Command Console & Web Dashboard
+
+The project includes an interactive, web-based dashboard and visualizer built into the Spring Boot application at `src/main/resources/static/index.html`.
+
+### How to Access
+Start the Spring Boot application and navigate to:
+```text
+http://localhost:8080/
+```
+
+### Dashboard Capabilities & Features
+
+1. **Emergency Hospital Dispatcher (XML Generator)**
+   - Select requesting hospitals (e.g. Chris Hani Baragwanath, Groote Schuur, Steve Biko).
+   - Select required blood type (`O-Negative`, `O-Positive`, `A-Positive`, etc.).
+   - Interactive unit slider (`0 - 50` units).
+   - Generates legacy XML payload (`<hospitalRequest>`) dynamically.
+
+2. **Real-Time Integration Flow Visualizer**
+   - Step-by-step state animations tracking the 5 key pipeline stages:
+     1. **Inbound SQS Queue** — Message ingestion
+     2. **Data Translation** — XML to Canonical transformation
+     3. **Payload Enricher** — UTC timestamping
+     4. **Scatter-Gather Router** — Concurrent SOAP & REST querying
+     5. **Event Trigger (Amazon SNS)** — Conditional SMS/Email alerts on shortage
+
+3. **Execution Trace & Infrastructure Telemetry**
+   - **Pipeline Trace**: Displays raw JSON execution traces returned by the backend.
+   - **System Telemetry**: Displays live status for AWS Fargate, SQS Queue, active adapters, and server region.
+
+4. **AWS SQS Push & Emergency Shortage Simulation**
+   - **Run Live Pipeline**: Executes the EIP pipeline synchronously for real-time demonstration.
+   - **Push to SQS Queue**: Directly dispatches XML payloads to the configured AWS SQS queue URL (`POST /api/broker/sqs/publish`).
+   - **Simulate 0 Units**: Instantly triggers an emergency 0-unit request to verify automated SNS notification dispatches.
+
+5. **Connected Blood Banks Stock Gauge**
+   - Visual card indicators displaying available units across Legacy Bank A (SOAP) and Modern Bank B (REST).
+
+### Backend Controller Endpoints
+
+- `POST /api/broker/process-xml` — Runs the EIP pipeline synchronously and returns detailed trace JSON.
+- `POST /api/broker/sqs/publish` — Publishes legacy XML messages to AWS SQS queue.
+- `GET /api/broker/telemetry` — Returns system health and AWS environment telemetry.
+
+WTC-8UXPT3GE
