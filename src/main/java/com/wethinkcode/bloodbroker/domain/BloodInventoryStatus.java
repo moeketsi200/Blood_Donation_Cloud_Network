@@ -1,5 +1,9 @@
 package com.wethinkcode.bloodbroker.domain;
 
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+
+@DynamoDbBean
 public class BloodInventoryStatus {
     private String bankName;
     private int unitsAvailable;
@@ -18,6 +22,7 @@ public class BloodInventoryStatus {
         this.emergencyShortage = emergencyShortage;
     }
 
+    @DynamoDbPartitionKey
     public String getBankName() {
         return bankName;
     }

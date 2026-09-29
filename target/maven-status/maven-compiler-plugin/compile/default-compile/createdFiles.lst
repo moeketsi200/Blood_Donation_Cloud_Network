@@ -4,6 +4,7 @@ com/wethinkcode/bloodbroker/transformer/XmlToCanonicalTransformer.class
 com/wethinkcode/bloodbroker/router/BloodBankRouter.class
 com/wethinkcode/bloodbroker/domain/BloodInventoryStatus.class
 com/wethinkcode/bloodbroker/adapter/TwilioNotificationAdapter.class
+com/wethinkcode/bloodbroker/controller/BrokerRestController.class
 com/wethinkcode/bloodbroker/config/WebServiceConfig.class
 com/wethinkcode/bloodbroker/transformer/PayloadEnricher.class
 com/wethinkcode/bloodbroker/adapter/ModernBankRestAdapter.class

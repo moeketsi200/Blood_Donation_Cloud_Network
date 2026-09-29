@@ -1,0 +1,6 @@
+com/wethinkcode/bloodbroker/transformer/XmlToCanonicalTransformerTest.class
+com/wethinkcode/bloodbroker/router/BloodBankRouterTest.class
+com/wethinkcode/bloodbroker/config/SftpInboundConfigTest.class
+com/wethinkcode/bloodbroker/domain/DomainTest.class
+com/wethinkcode/bloodbroker/transformer/PayloadEnricherTest.class
+com/wethinkcode/bloodbroker/adapter/AdapterTest.class
