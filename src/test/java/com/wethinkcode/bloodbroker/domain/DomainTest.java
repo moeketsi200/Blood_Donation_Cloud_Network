@@ -5,6 +5,29 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class DomainTest {
 
+    // ── Custom Assertions ────────────────────────────────────────────────────
+    
+    private void assertHospitalRequest(HospitalRequest request, String expectedType, int expectedUnits, String expectedHospital, String expectedTimestamp) {
+        assertEquals(expectedType, request.getBloodType());
+        assertEquals(expectedUnits, request.getUnitsRequired());
+        assertEquals(expectedHospital, request.getHospitalId());
+        assertEquals(expectedTimestamp, request.getTimestamp());
+    }
+
+    private void assertBloodInventoryStatus(BloodInventoryStatus status, String expectedBank, String expectedType, int expectedUnits, boolean expectedShortage) {
+        assertEquals(expectedBank, status.getBankName());
+        assertEquals(expectedType, status.getBloodType());
+        assertEquals(expectedUnits, status.getUnitsAvailable());
+        assertEquals(expectedShortage, status.isEmergencyShortage());
+    }
+
+    private void assertEmergencyAlert(EmergencyAlert alert, String expectedType, String expectedHospital, String expectedTimestamp, int expectedUnits) {
+        assertEquals(expectedType, alert.getBloodType());
+        assertEquals(expectedHospital, alert.getHospitalId());
+        assertEquals(expectedTimestamp, alert.getTimestamp());
+        assertEquals(expectedUnits, alert.getUnitsRequired());
+    }
+
     // ── HospitalRequest ───────────────────────────────────────────────────────
 
     @Test
@@ -15,20 +38,13 @@ class DomainTest {
         request.setHospitalId("HOSP-123");
         request.setTimestamp("2023-10-01T10:00:00Z");
 
-        assertEquals("O-Negative", request.getBloodType());
-        assertEquals(10, request.getUnitsRequired());
-        assertEquals("HOSP-123", request.getHospitalId());
-        assertEquals("2023-10-01T10:00:00Z", request.getTimestamp());
+        assertHospitalRequest(request, "O-Negative", 10, "HOSP-123", "2023-10-01T10:00:00Z");
     }
 
     @Test
     void testHospitalRequestAllArgsConstructor() {
         HospitalRequest request = new HospitalRequest("AB-Positive", 2, "HOSP-XYZ");
-
-        assertEquals("AB-Positive", request.getBloodType());
-        assertEquals(2, request.getUnitsRequired());
-        assertEquals("HOSP-XYZ", request.getHospitalId());
-        assertNull(request.getTimestamp());
+        assertHospitalRequest(request, "AB-Positive", 2, "HOSP-XYZ", null);
     }
 
     // ── BloodInventoryStatus ─────────────────────────────────────────────────
@@ -40,19 +56,13 @@ class DomainTest {
         status.setUnitsAvailable(5);
         status.setEmergencyShortage(false);
 
-        assertEquals("Bank A", status.getBankName());
-        assertEquals(5, status.getUnitsAvailable());
-        assertFalse(status.isEmergencyShortage());
+        assertBloodInventoryStatus(status, "Bank A", "UNKNOWN", 5, false);
     }
 
     @Test
     void testBloodInventoryStatusAllArgsConstructor() {
         BloodInventoryStatus status = new BloodInventoryStatus("Bank C", "O-Positive", 7, false);
-
-        assertEquals("Bank C", status.getBankName());
-        assertEquals("O-Positive", status.getBloodType());
-        assertEquals(7, status.getUnitsAvailable());
-        assertFalse(status.isEmergencyShortage());
+        assertBloodInventoryStatus(status, "Bank C", "O-Positive", 7, false);
     }
 
     @Test
@@ -71,11 +81,7 @@ class DomainTest {
     @Test
     void testEmergencyAlertConstructorAndGetters() {
         EmergencyAlert alert = new EmergencyAlert("O-Negative", "HOSP-007", "2024-01-01T00:00:00Z", 5);
-
-        assertEquals("O-Negative", alert.getBloodType());
-        assertEquals("HOSP-007", alert.getHospitalId());
-        assertEquals("2024-01-01T00:00:00Z", alert.getTimestamp());
-        assertEquals(5, alert.getUnitsRequired());
+        assertEmergencyAlert(alert, "O-Negative", "HOSP-007", "2024-01-01T00:00:00Z", 5);
     }
 
     @Test
@@ -87,9 +93,6 @@ class DomainTest {
         alert.setTimestamp("2025-01-01T00:00:00Z");
         alert.setUnitsRequired(10);
 
-        assertEquals("B-Negative", alert.getBloodType());
-        assertEquals("HOSP-999", alert.getHospitalId());
-        assertEquals("2025-01-01T00:00:00Z", alert.getTimestamp());
-        assertEquals(10, alert.getUnitsRequired());
+        assertEmergencyAlert(alert, "B-Negative", "HOSP-999", "2025-01-01T00:00:00Z", 10);
     }
 }
