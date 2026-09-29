@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🩸 Blood Integration Broker — AWS Cloud Command Console</title>
+    <title>Blood Integration Broker Console</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🩸</text></svg>">
 
     <!-- Google Fonts: Outfit & Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -12,6 +13,9 @@
 
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
         :root {
@@ -36,6 +40,37 @@
             --font-title: 'Outfit', sans-serif;
             --font-body: 'Plus Jakarta Sans', sans-serif;
             --font-code: 'Fira Code', monospace;
+
+            --input-bg: rgba(0, 0, 0, 0.2);
+        }
+
+        /* ── LIGHT MODE VARIABLES ── */
+        [data-theme="light"] {
+            --bg-dark: #F1F5F9;
+            --bg-card: rgba(255, 255, 255, 0.9);
+            --bg-card-hover: rgba(255, 255, 255, 1);
+            --border-glass: rgba(0, 0, 0, 0.1);
+            --text-main: #1E293B;
+            --text-muted: #475569;
+            --text-dim: #64748B;
+            --input-bg: rgba(255, 255, 255, 0.8);
+        }
+
+        /* ── EMERGENCY OVERLAY ── */
+        .emergency-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle, transparent 50%, rgba(230,57,70,0.4) 100%);
+            opacity: 0;
+            z-index: 9999;
+            transition: opacity 0.5s ease-in-out;
+            animation: pulse-red-alert 1.5s infinite alternate;
+        }
+        .emergency-overlay.active { opacity: 1; }
+        @keyframes pulse-red-alert {
+            0% { box-shadow: inset 0 0 50px rgba(230,57,70,0.2); }
+            100% { box-shadow: inset 0 0 150px rgba(230,57,70,0.7); }
         }
 
         * {
@@ -56,6 +91,36 @@
             line-height: 1.6;
             padding-bottom: 60px;
             min-height: 100vh;
+            position: relative;
+        }
+
+        /* ── WEB3 / CLOUD GRID BACKGROUND ── */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -40px; left: 0; width: 100%; height: calc(100% + 40px);
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+            background-size: 40px 40px;
+            z-index: -1;
+            animation: web3-grid-scroll 10s linear infinite;
+            pointer-events: none;
+            /* Fade the grid smoothly at the edges */
+            mask-image: radial-gradient(ellipse at center, black 40%, transparent 95%);
+            -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 95%);
+        }
+
+        @keyframes web3-grid-scroll {
+            0% { transform: translateY(0) rotateX(0deg); }
+            100% { transform: translateY(40px) rotateX(0deg); }
+        }
+
+        /* ── LIGHT MODE TWEAKS FOR GRID ── */
+        [data-theme="light"] body::before {
+            background-image: 
+                linear-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
         }
 
         /* ── Scrollbar ────────────────────────────────────────── */
@@ -365,6 +430,18 @@
             margin-top: 20px;
         }
 
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .range-slider {
+            flex: 1;
+            accent-color: var(--primary-red);
+            height: 6px;
+        }
+
         .btn {
             padding: 12px 20px;
             border-radius: 10px;
@@ -414,7 +491,6 @@
             background: var(--primary-red);
             color: white;
         }
-
         /* ── EIP Pipeline Diagram Visualizer ──────────────────── */
         .pipeline-flow {
             display: flex;
@@ -482,6 +558,9 @@
             border-radius: 6px;
             background: rgba(255, 255, 255, 0.05);
             color: var(--text-dim);
+            white-space: nowrap;
+            flex-shrink: 0;
+            text-align: center;
         }
 
         .pipeline-node.active .node-status {
@@ -565,6 +644,29 @@
             font-weight: 800;
             color: var(--primary-red);
             margin-bottom: 4px;
+        }
+
+        .blood-card.universal-donor {
+            border: 1px solid var(--accent-amber);
+            box-shadow: 0 0 15px rgba(255, 183, 3, 0.2);
+            background: linear-gradient(145deg, var(--bg-card), rgba(255, 183, 3, 0.05));
+        }
+        .blood-card.universal-donor .blood-type {
+            color: var(--accent-amber);
+            text-shadow: 0 0 10px rgba(255, 183, 3, 0.4);
+        }
+        .universal-badge {
+            font-size: 9px;
+            background: rgba(255, 183, 3, 0.2);
+            color: var(--accent-amber);
+            padding: 2px 6px;
+            border-radius: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 183, 3, 0.4);
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
         }
 
         .bank-stock {
@@ -651,7 +753,10 @@
                     </div>
                 </div>
 
-                <div class="header-stats">
+                <div class="header-stats" style="display:flex; align-items:center; gap: 15px;">
+                    <button id="theme-toggle" onclick="toggleTheme()" style="background:transparent; border:1px solid var(--border-glass); color:var(--text-main); padding: 8px 12px; border-radius: 8px; cursor:pointer;">
+                        <i class="fa-solid fa-sun"></i>
+                    </button>
                     <div class="stat-pill">
                         <i class="fa-solid fa-cloud"></i>
                         <div>
@@ -701,7 +806,7 @@
                 <div class="form-group">
                     <label class="form-label" for="blood-type-select">Blood Type Required</label>
                     <select id="blood-type-select" class="form-select" onchange="updateXmlPayload()">
-                        <option value="O-Negative">O-Negative (Universal Donor 🚨)</option>
+                        <option value="O-Negative">O-Negative (Universal ⭐️)</option>
                         <option value="O-Positive">O-Positive</option>
                         <option value="A-Negative">A-Negative</option>
                         <option value="A-Positive">A-Positive</option>
@@ -873,43 +978,47 @@
                 <div style="padding: 15px; display: flex; flex-direction: column; gap: 12px;">
                     <div>
                         <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--text-muted);">Source (Bank Name)</label>
-                        <input type="text" id="restock-bank" value="Community Drive #1" style="width:100%; padding:8px; border-radius:4px; border:1px solid var(--border-glass); background:rgba(0,0,0,0.2); color:white;">
+                        <input type="text" id="restock-bank" value="Community Drive #1" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-glass); background:var(--input-bg); color:var(--text-main); font-family:var(--font-body); outline:none;">
                     </div>
                     <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <div>
                             <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--text-muted);">Blood Type</label>
-                            <select id="restock-type" style="width:100%; padding:8px; border-radius:4px; border:1px solid var(--border-glass); background:rgba(0,0,0,0.2); color:white;">
-                                <option>O-Positive</option>
-                                <option>O-Negative</option>
-                                <option>A-Positive</option>
-                                <option>A-Negative</option>
-                                <option>B-Positive</option>
-                                <option>B-Negative</option>
-                                <option>AB-Positive</option>
-                                <option>AB-Negative</option>
+                            <select id="restock-type" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-glass); background:var(--input-bg); color:var(--text-main); font-family:var(--font-body); outline:none;">
+                                <option value="O-Positive">O-Positive</option>
+                                <option value="O-Negative">O-Negative (Universal ⭐️)</option>
+                                <option value="A-Positive">A-Positive</option>
+                                <option value="A-Negative">A-Negative</option>
+                                <option value="B-Positive">B-Positive</option>
+                                <option value="B-Negative">B-Negative</option>
+                                <option value="AB-Positive">AB-Positive</option>
+                                <option value="AB-Negative">AB-Negative</option>
                             </select>
                         </div>
                         <div>
                             <label style="display:block; font-size:12px; margin-bottom:4px; color:var(--text-muted);">Units to Add</label>
-                            <input type="number" id="restock-units" value="10" min="1" max="100" style="width:100%; padding:8px; border-radius:4px; border:1px solid var(--border-glass); background:rgba(0,0,0,0.2); color:white;">
+                            <input type="number" id="restock-units" value="10" min="1" max="100" style="width:100%; padding:10px; border-radius:6px; border:1px solid var(--border-glass); background:var(--input-bg); color:var(--text-main); font-family:var(--font-body); outline:none;">
                         </div>
                     </div>
-                    <button class="primary-btn" style="justify-content:center; margin-top:8px;" onclick="restockBlood()">
+                    <button class="btn btn-primary" style="justify-content:center; margin-top:8px;" onclick="restockBlood()">
                         <i class="fa-solid fa-plus"></i> Add Inventory to AWS
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- ── BLOOD BANK INVENTORY GAUGE CARDS ───────────────────────── -->
+        <!-- ── BLOOD BANK INVENTORY GAUGE CARDS & CHART ─────────────────── -->
         <div class="inventory-section">
-            <div class="glass-card">
+            <div class="glass-card" style="display:flex; flex-direction:column;">
                 <div class="card-header">
                     <div class="card-title">
                         <i class="fa-solid fa-boxes-stacked"></i>
                         Connected Blood Banks Stock Level
                     </div>
                     <span class="badge-tag">Bank A (SOAP) + Bank B (REST)</span>
+                </div>
+                
+                <div style="padding: 15px; height: 250px; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid var(--border-glass);">
+                    <canvas id="inventory-chart"></canvas>
                 </div>
 
                 <div class="inventory-grid" id="inventory-grid">
@@ -928,8 +1037,24 @@
         </div>
     </div>
 
+    <!-- ── EMERGENCY OVERLAY ─────────────────────────────────────────── -->
+    <div class="emergency-overlay" id="emergency-overlay"></div>
+
     <!-- ── JAVASCRIPT LOGIC ──────────────────────────────────────────── -->
     <script>
+        // ── Theme Toggle ──
+        function toggleTheme() {
+            const body = document.documentElement;
+            const btn = document.getElementById('theme-toggle');
+            if (body.getAttribute('data-theme') === 'light') {
+                body.removeAttribute('data-theme');
+                btn.innerHTML = '<i class="fa-solid fa-sun"></i>';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                btn.innerHTML = '<i class="fa-solid fa-moon"></i>';
+            }
+        }
+
         // Initial setup
         document.addEventListener('DOMContentLoaded', () => {
             updateXmlPayload();
@@ -968,6 +1093,8 @@
         async function animatePipelineNodes(isEmergency) {
             const nodes = ['node-sqs', 'node-transform', 'node-enrich', 'node-router', 'node-sns'];
             
+            document.title = "⚙️ Processing... | Blood Broker";
+
             // Reset all nodes
             nodes.forEach(id => {
                 const el = document.getElementById(id);
@@ -979,15 +1106,25 @@
             for (let i = 0; i < nodes.length; i++) {
                 const el = document.getElementById(nodes[i]);
                 el.classList.add('active');
-                el.querySelector('.node-status').innerText = 'Processing...';
+                el.querySelector('.node-status').innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing...';
                 await new Promise(r => setTimeout(r, 220));
                 
                 if (i === nodes.length - 1) {
-                    el.querySelector('.node-status').innerText = isEmergency ? '🚨 SHORTAGE ALERT SENT' : '✅ STOCK AVAILABLE';
+                    el.querySelector('.node-status').innerHTML = isEmergency ? '<i class="fa-solid fa-triangle-exclamation"></i> ALERT SENT' : '<i class="fa-solid fa-shield-check"></i> SECURED';
                 } else {
-                    el.querySelector('.node-status').innerText = '✅ OK';
+                    el.querySelector('.node-status').innerHTML = '<i class="fa-solid fa-check-double"></i> PROCESSED';
                 }
             }
+
+            if (isEmergency) {
+                document.title = "🚨 SHORTAGE ALERT | Blood Broker";
+            } else {
+                document.title = "✅ SECURED | Blood Broker";
+            }
+
+            setTimeout(() => {
+                document.title = "🩸 Blood Integration Broker Console";
+            }, 5000);
         }
 
         // ── Run Live Synchronous Pipeline ──────────────────────────────
@@ -1155,7 +1292,9 @@
             }
         }
 
-        // ── Render Blood Inventory Gauges ──────────────────────────────
+        // ── Render Blood Inventory Gauges & Chart ───────────────────────
+        let inventoryChart = null;
+
         async function renderBloodInventory() {
             const types = ['O-Negative', 'O-Positive', 'A-Negative', 'A-Positive', 'B-Negative', 'B-Positive', 'AB-Negative', 'AB-Positive'];
             const container = document.getElementById('inventory-grid');
@@ -1169,6 +1308,9 @@
 
                 container.innerHTML = ''; // Clear container right before rendering to prevent duplicates
 
+                let isAnyEmergency = false;
+                let chartData = [];
+
                 types.forEach((type) => {
                     // Find actual units across all banks for this specific blood type
                     let totalUnits = 0;
@@ -1179,12 +1321,27 @@
                         }
                     });
 
+                    if (totalUnits === 0) {
+                        isAnyEmergency = true;
+                    }
+                    chartData.push(totalUnits);
+
+                    let specialClass = '';
+                    let badgeHTML = '';
+                    if (type === 'O-Negative') {
+                        specialClass = 'universal-donor';
+                        badgeHTML = '<span class="universal-badge"><i class="fa-solid fa-star"></i> Universal</span>';
+                    }
+
                     // For the UI cards, we just show the total pulled from DB
                     const card = document.createElement('div');
-                    card.className = 'blood-card';
+                    card.className = `blood-card ${specialClass}`;
                     card.innerHTML = `
-                        <div class="blood-type">${type}</div>
-                        <div style="font-size:12px; color:var(--text-muted); font-weight:600;">
+                        <div class="blood-type" style="display:flex; flex-direction:column; align-items:center; gap:6px;">
+                            <span>${type}</span>
+                            ${badgeHTML}
+                        </div>
+                        <div style="font-size:12px; color:var(--text-muted); font-weight:600; margin-top:8px;">
                             Total Available: <span class="${totalUnits === 0 ? 'stock-val zero' : 'stock-val'}">${totalUnits} Units</span>
                         </div>
                         <div class="bank-stock">
@@ -1193,6 +1350,48 @@
                     `;
                     container.appendChild(card);
                 });
+
+                // Update Chart.js Graphic
+                if (inventoryChart) {
+                    inventoryChart.data.datasets[0].data = chartData;
+                    inventoryChart.update();
+                } else {
+                    const ctx = document.getElementById('inventory-chart').getContext('2d');
+                    inventoryChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: types,
+                            datasets: [{
+                                label: 'Available Units',
+                                data: chartData,
+                                backgroundColor: 'rgba(230, 57, 70, 0.7)',
+                                borderColor: 'rgba(230, 57, 70, 1)',
+                                borderWidth: 1,
+                                borderRadius: 4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#94A3B8' } },
+                                x: { grid: { display: false }, ticks: { color: '#94A3B8' } }
+                            },
+                            plugins: {
+                                legend: { display: false }
+                            }
+                        }
+                    });
+                }
+
+                // Toggle Emergency Effect
+                const overlay = document.getElementById('emergency-overlay');
+                if (isAnyEmergency) {
+                    overlay.classList.add('active');
+                } else {
+                    overlay.classList.remove('active');
+                }
+
             } catch (err) {
                 console.error("Failed to fetch live inventory", err);
                 container.innerHTML = '<div style="color:var(--primary-red);">Error loading live inventory from AWS.</div>';
