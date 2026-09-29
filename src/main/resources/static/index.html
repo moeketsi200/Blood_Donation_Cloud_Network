@@ -844,6 +844,20 @@
             </div>
         </div>
 
+        <!-- ── RECENT HOSPITAL REQUESTS ─────────────────────────────────── -->
+        <div class="glass-card response-console">
+            <div class="card-header">
+                <div class="card-title">
+                    <i class="fa-solid fa-truck-fast"></i>
+                    Recent Hospital Dispatches
+                </div>
+                <span class="badge-tag">Live Feed</span>
+            </div>
+            <div id="recent-requests-feed" style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="color:var(--text-dim); font-size:13px; text-align:center; padding:10px;">No recent requests. Run the pipeline to dispatch blood.</div>
+            </div>
+        </div>
+
         <!-- ── BLOOD BANK INVENTORY GAUGE CARDS ───────────────────────── -->
         <div class="inventory-section">
             <div class="glass-card">
@@ -959,6 +973,12 @@
 
                 // ── Instantly update the visual gauges with the new AWS numbers! ──
                 await renderBloodInventory();
+                
+                // ── Add to Recent Hospital Requests Feed ──
+                const hospital = document.getElementById('hospital-select').value;
+                const bloodType = document.getElementById('blood-type-select').value;
+                const units = document.getElementById('units-slider').value;
+                addRecentRequest(hospital, bloodType, units, data.step7_inventory_reservation);
 
             } catch (err) {
                 console.error(err);
@@ -1083,6 +1103,26 @@
             setTimeout(() => {
                 toast.classList.remove('show');
             }, 3500);
+        }
+
+        // ── Recent Requests Helper ────────────────────────────────────
+        function addRecentRequest(hospital, type, units, resultText) {
+            const feed = document.getElementById('recent-requests-feed');
+            if (feed.innerText.includes('No recent requests')) {
+                feed.innerHTML = '';
+            }
+            const time = new Date().toLocaleTimeString();
+            const el = document.createElement('div');
+            el.style = "background: rgba(255,255,255,0.03); border: 1px solid var(--border-glass); padding: 12px; border-radius: 8px; font-size:13px;";
+            el.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                    <strong style="color:var(--text-main);">${hospital}</strong>
+                    <span style="color:var(--text-dim); font-size:11px;">${time}</span>
+                </div>
+                <div style="color:var(--primary-red); font-weight:600;">Requested: ${units} units of ${type}</div>
+                <div style="color:var(--accent-teal); font-size:12px; margin-top:4px;">${resultText || 'Completed'}</div>
+            `;
+            feed.insertBefore(el, feed.firstChild);
         }
     </script>
 </body>
